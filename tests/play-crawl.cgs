@@ -1,0 +1,4 @@
+# the EBS crawl runs through all 24 of its lines
+SET_PAGE 2
+GET_LINE
+PLAY 3000 750 build/test/crawlfull-

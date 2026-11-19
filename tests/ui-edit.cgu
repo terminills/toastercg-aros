@@ -1,0 +1,14 @@
+# type on a fresh page, colour it, box it, move it
+CLICK 74 452
+CLICK 118 452
+TYPE Hello AROS
+KEY 44
+TYPE second line
+SHOT build/test/edit-1.png
+DRAG 200 100 260 120 1
+CLICK 159 452
+DRAG 400 404 300 404
+SHOT build/test/edit-2.png
+CLICK 600 384
+CLICK 380 437
+SHOT build/test/edit-3.png

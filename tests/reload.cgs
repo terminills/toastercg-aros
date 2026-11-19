@@ -1,0 +1,8 @@
+# the book and the page file written by newpage.cgs come back the same
+SET_PAGE 5
+RENDER build/test/reload-book.png
+SET_PAGE 6
+LOADPAGE build/test/newpage.frame
+GET_PAGE TYPE
+EXPECT Framestore
+RENDER build/test/reload-frame.png

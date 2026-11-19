@@ -1,0 +1,13 @@
+# a crawl's slider (above the bar): pressed at its right end the cursor goes
+# to the end of the crawl, as End takes it
+KEY 49
+KEY 49
+PRESS 750 418
+RELEASE 750 418
+SHOT build/test/crawlslider-end.png
+KEY 70
+KEY 71
+SHOT build/test/crawlslider-endkey.png
+PRESS 2 418
+RELEASE 2 418
+SHOT build/test/crawlslider-start.png

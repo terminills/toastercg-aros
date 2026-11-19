@@ -1,0 +1,11 @@
+# pages of System4.1 as page files (tools/pagecheck reads them back)
+SET_PAGE 3
+SAVEPAGE build/test/page-3
+SET_PAGE 5
+SAVEPAGE build/test/page-5
+SET_PAGE 2
+SAVEPAGE build/test/page-2
+SET_PAGE 16
+SAVEPAGE build/test/page-16
+SET_PAGE 18
+SAVEPAGE build/test/page-18

@@ -1,0 +1,14 @@
+# a crawl to a scroll and back: the text survives, split to fit and joined again
+SET_PAGE 2
+GET_PAGE SIZE
+EXPECT 24
+SET_PAGE TYPE S
+GET_PAGE TYPE
+EXPECT Scroll
+GET_PAGE SIZE
+RENDER build/test/crawl-as-scroll.png
+SET_PAGE TYPE C
+GET_PAGE TYPE
+EXPECT Crawl
+GET_LINE
+PLAY 1500 700 build/test/crawl-again-

@@ -1,0 +1,5 @@
+# the EBS crawl and the Mojoworld scroll from System4.1, a few fields each
+SET_PAGE 2
+PLAY 400 100 build/test/crawl-
+SET_PAGE 18
+PLAY 2000 150 build/test/scroll-

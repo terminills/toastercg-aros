@@ -1,0 +1,14 @@
+# a crawl line is at most 300 lines: a large font with a drop shadow and an
+# outline is trimmed, with the Toaster's message (System4.1.Book page 2, EBS)
+SET_PAGE 2
+GET_PAGE TYPE
+EXPECT Crawl
+LOADFONT Toaster:PSFonts/SoftMaker/Balloon-ExtraBold 290
+PICK_LINE
+SET_FONT Toaster:PSFonts/SoftMaker/Balloon-ExtraBold 290
+SET_SHAD TYPE DROP
+SET_SHAD SIZE 5
+SET_BORD SIZE 3
+GET_LINE TALL
+EXPECT 300
+RENDER build/test/crawltrim.png

@@ -1,0 +1,21 @@
+# dragging: no line off the left edge, no characters off the right
+# (CGBetaChanges); once at an edge, dragging further changes nothing.
+# Shots in preview (Alt-Help): without the cursor; run.sh compares above the bar.
+KEY 49
+KEY 49
+KEY 49
+DRAG 300 160 -400 160
+KEY 5f 0 2
+SHOT build/test/drag-left.png
+KEY 5f 0 2
+DRAG 40 160 -300 160
+KEY 5f 0 2
+SHOT build/test/drag-left2.png
+KEY 5f 0 2
+DRAG 40 160 1400 160
+KEY 5f 0 2
+SHOT build/test/drag-right.png
+KEY 5f 0 2
+DRAG 700 160 1500 160
+KEY 5f 0 2
+SHOT build/test/drag-right2.png

@@ -1,0 +1,56 @@
+# CG_AREXX answers as the original cgrexx.c, as the shipped scripts expect
+# (System4.1.Book)
+# a function that is not ours: RC 5, Result2 1, so ARexx tries the next host
+WRITELN 1 "hello"
+EXPECTRC 5 1
+# types in the original's words
+SET_PAGE 3
+GET_PAGE TYPE
+EXPECT Key
+GET_LINE TYPE
+EXPECT Text
+GET_SHAD TYPE
+EXPECT Cast
+GET_FONT TYPE
+EXPECT 2
+# FIRS returns nothing and restarts the list; NEXT then gives the first font
+GET_FONT FIRS
+EXPECT 
+GET_FONT NEXT
+EXPECT Toaster:PSFonts/SoftMaker/Balloon-ExtraBold,35
+GET_FONT NEXT
+EXPECT Toaster:PSFonts/SoftMaker/Balloon-ExtraBold,45
+# an attribute GET_LINE does not have: RC 10, Result2 18
+GET_LINE NOSUCH
+EXPECTRC 10 18
+# SET_SHAD SIZE answers the length before (stored doubled); MAKE_RECT on a
+# moving page is an error; SET_PAGE out of range is ignored
+SET_SHAD SIZE 3
+EXPECT 4
+SET_SHAD SIZE 2
+EXPECT 6
+SET_PAGE 999
+EXPECTRC 0 0
+# an unknown page type is ignored, as in cgrexx.c
+SET_PAGE TYPE NOSUCH
+EXPECTRC 0 0
+# LOADTEXT is LOADFILE
+SET_PAGE 40
+SET_PAGE TYPE KEY
+LOADTEXT testdata/CG/Textfiles/EBS.Txt
+EXPECT 1
+# REQ_FILE gives the whole path and remembers its drawer; with no
+# arguments it and REQ_STRING have titles of their own (cgrexx.c)
+ANSWER Toaster:PSFonts/SoftMaker/Balloon-ExtraBold
+REQ_FILE "Choose a postscript font" "" Toaster:PSFonts
+EXPECT Toaster:PSFonts/SoftMaker/Balloon-ExtraBold
+ANSWER @offered
+REQ_FILE
+EXPECT Toaster:PSFonts/SoftMaker/offered
+ANSWER typed
+REQ_STRING
+EXPECT typed
+# REXX with no name asks for one
+ANSWER RAM:asked.rexx
+REXX
+EXPECTRC 0 0

@@ -1,0 +1,10 @@
+# a book whose colour font is not installed (fontroot without Symbola.80;
+# run.sh puts the repository for @PWD@):
+# the CG offers to replace it; the answer is another colour font
+KEY 49
+KEY 49
+KEY 49
+SHOT build/test/missing-before.png
+ANSWER @PWD@/testdata/PSFonts/Colorfonts/OlGold.80
+CHECKBOOK
+SHOT build/test/missing-after.png

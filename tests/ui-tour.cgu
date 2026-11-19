@@ -1,0 +1,12 @@
+# the bar in each mode over System4.1
+SHOT build/test/ui-normal.png
+KEY 66
+SHOT build/test/ui-cmds.png
+KEY 66
+CLICK 74 452
+SHOT build/test/ui-pagetype.png
+CLICK 600 440
+CLICK 159 452
+SHOT build/test/ui-color.png
+CLICK 230 470
+SHOT build/test/ui-color-bkg.png

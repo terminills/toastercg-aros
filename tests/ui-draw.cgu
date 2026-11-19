@@ -1,0 +1,15 @@
+# Load Draw: a PostScript graphic (text, rotation, shear) in an empty book
+CLICK 74 452
+CLICK 118 452
+CLICK 116 452
+ANSWER Toaster:PSFonts/SoftMaker/Balloon-ExtraBold
+ANSWER 60
+CLICK 160 452
+ANSWER Toaster
+ANSWER 15
+ANSWER 20
+CLICK 203 452
+KEY 45
+CLICK 200 150
+SHOT build/test/draw.png
+SAVEBOOK build/test/draw.book

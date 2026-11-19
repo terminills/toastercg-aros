@@ -1,0 +1,5 @@
+testdata/
+build/
+*.o
+__pycache__/
+local.mk

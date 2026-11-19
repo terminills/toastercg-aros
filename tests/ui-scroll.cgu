@@ -1,0 +1,24 @@
+# a scroll page: the view follows the cursor, the slider moves the view
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+KEY 49
+SHOT build/test/scroll-top.png
+KEY 71
+SHOT build/test/scroll-end.png
+CLICK 746 200
+SHOT build/test/scroll-prop.png

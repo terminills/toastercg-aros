@@ -1,0 +1,11 @@
+# a crawl page: End takes the view to the end of its whole text; typing there; Help
+KEY 49
+KEY 49
+KEY 71
+SHOT build/test/crawl-end.png
+TYPE  ...and that is all.
+SHOT build/test/crawl-typed.png
+KEY 70
+SHOT build/test/crawl-home.png
+KEY 5f
+SHOT build/test/help.png

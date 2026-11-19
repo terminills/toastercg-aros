@@ -1,0 +1,6 @@
+# F7: the page rendered to disk as an ILBM (checked by tools/ilbmcheck)
+KEY 49
+KEY 49
+KEY 49
+ANSWER build/test/renderdisk.ilbm
+KEY 56

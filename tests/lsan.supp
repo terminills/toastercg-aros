@@ -1,0 +1,3 @@
+# FreeType 2.14.2 leaks every bitmap FT_Glyph_To_Bitmap renders (fixed in
+# 2.14.3, FreeType issue 1399; AROS ships 2.14.3). Only that frame.
+leak:FT_Glyph_To_Bitmap

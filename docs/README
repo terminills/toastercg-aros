@@ -1,0 +1,209 @@
+ToasterCG for AROS  1.0 RC7 (release candidate 7)
+=================================================
+
+The Video Toaster CG, NewTek's character generator, running natively on
+AROS: the 4.1 interface as it was, drawn clean at any screen size, with
+the books, fonts, brushes and ARexx scripts of the Video Toaster 4.
+
+Nothing of the Video Toaster is in this archive. The CG draws its panel
+from the CG program of your own Video Toaster and takes its fonts,
+brushes, books and scripts from there.
+
+
+What you need
+-------------
+- AROS x86_64 (or i386: use the i386 archive).
+- reqtools.library and freetype2.library (both come with AROS).
+- A Video Toaster 4.x installation (not part of this archive), assigned
+  as Toaster: - its drawer as on the Video Toaster 4.x discs:
+    Programs/CG                      the CG program (Toaster CG 4.1): the
+                                     panel's gadgets and colours are read
+                                     from it
+    Programs/System_Support/Fonts/CGInterface/14.4C
+                                     the panel's font (also looked for as
+                                     Fonts/CGInterface/14.4C)
+    Programs/CG_Support/cg-config    the macro keys, paths and devices
+    ARexx/CG                         the CG's ARexx scripts
+    PSFonts, Brushes, CG (Books, Keys, Scrolls, Crawls, Frames,
+    TextFiles), Framestore           what books are made of: they name
+                                     their fonts and brushes as
+                                     Toaster:PSFonts/..., Toaster:Brushes/...
+  The files are read, never changed. The CG was made with, and tested
+  against, the CG of the Video Toaster 4.2 (Flyer 4.2 CD).
+- For the ARexx scripts and macro keys (Alt-F1..F10): an ARexx interpreter
+  that provides the REXX port, such as Regina with its RexxMast. AROS
+  itself ships RX but no interpreter. cgrx (below) needs none.
+  Regina as AROS builds it (contrib/regina) has two faults these scripts
+  meet: every call to a function host added with addlib, as the CG's
+  scripts all do, stops with "Assertion (FALSE) failed in amifuncs.c"
+  (a "break;" is missing after the RRT_HOST case), and REMLIB is not a
+  built-in function, so a script's REMLIB('CG_AREXX') ends it with
+  Error 94. With both fixed the Toaster's scripts run (SaveState.Rexx
+  and StartUp.rexx tested).
+
+
+Installing
+----------
+Unpack the archive anywhere, with any LhA or with the lha of AROS's
+contrib (Extras/Misc/aminet/C), for example into Work:
+
+    CD Work:
+    lha x ToasterCG-1.0RC7-x86_64.lha
+
+Then point Toaster: at the Video Toaster's drawer, for example in
+S:User-Startup:
+
+    Assign Toaster: Work:Toaster
+
+The first start draws the panel: the CG reads the gadget pictures and
+the font from the Toaster's CG program and redraws them as outlines, so
+they stay sharp at any size. That takes some seconds (9 on x86_64, 14 on
+i386 in the emulator this was tested in; a small window shows how far it
+is) and is done once: the result is kept as CG.art beside the
+CG, or as T:ToasterCG.art when its drawer cannot be written to (then it
+is drawn again after the next restart of the system). Later starts read
+that file and need the Toaster's CG program no more; if the program or
+the font is replaced by another, the panel is drawn again.
+
+Without the CG program and its font (and without a CG.art) the CG says
+which files it looked for and does not start. Without PSFonts it starts,
+says so, and text has no fonts until one is loaded.
+
+
+Running
+-------
+Double-click the CG icon, or from a shell:
+
+    CG [BOOK] [TOASTER dir] [SCALE percent] [CONFIG file]
+
+    BOOK     a book to open
+    TOASTER  the Video Toaster's drawer, where Toaster: in books points
+             (default Toaster:)
+    SCALE    the window against the Toaster's 752x480 frame: 100 or more,
+             in steps of 25; by default the largest that fits the screen
+             (425 on a 3840x2160 screen)
+    CONFIG   the cg-config file (default: cg-config beside the CG if
+             there is one, else the Toaster's Programs/CG_Support/cg-config)
+
+From Workbench the same are the icon's tool types (TOASTER=, SCALE=,
+CONFIG=); shift-click a book's icon with the CG's to open it. The
+window's size gadget resizes it in the same 25 percent steps.
+
+The Toaster's cg-config names its macros as REXX:CG/..., where the
+Toaster's installer copies the scripts. Where REXX:CG does not hold a
+macro, the CG runs it from the Toaster's ARexx/CG instead. Three of the
+scripts (RexxLauncher, RmWord, SpellCheck) look for other scripts and
+their own files in REXX:CG themselves; for those, copy ARexx/CG there:
+
+    Copy Toaster:ARexx/CG REXX:CG ALL
+
+To change the macro keys, copy the Toaster's cg-config beside the CG
+and edit the copy. A macro named PROGDIR:... in it is one in the CG's
+drawer: while it runs the CG assigns ToasterCG: to its drawer (unless
+that name is taken) and gives the interpreter such a macro as
+ToasterCG:..., since it takes the first word of a macro's name as the
+macro and a path such as "RAM Disk:..." has a space. For the same
+reason the Toaster's drawer should be reached by a name without spaces
+(the assign Toaster:).
+
+Books whose fonts or brushes are not installed ask, for each one,
+whether to replace it with another (as the Toaster did); a brush left
+unreplaced shows as a box.
+
+Help shows the keys. The function keys are the Toaster's: F1 shadow
+type, F2 light direction, F3 shadow length, F4 border, F5 shadow/border
+in front, F6 justify, F7 render the page to disk, F8 and F9 render, F10
+Take. Esc, the close gadget or Switcher leave the CG and ask first when
+the book has changed.
+
+
+Take and F7 without Toaster hardware
+------------------------------------
+Take plays the page in the CG's window: scrolls and crawls move at the
+NTSC field rate (59.94 fields a second, kept by the clock); a key or click
+stops it. F7 renders the page to a 24-bit IFF ILBM (the frame's size,
+see-through parts of a key page in its mask), which Load RGB takes back
+as a background.
+
+
+Pages for the Switcher
+----------------------
+Save Page (in Page Commands), or SAVE_PAGE <file> from ARexx, writes the
+current page as a crouton: its picture, an icon of it, and the kind of
+page it is (framestore, key, scroll or crawl) with its speed, its time
+and whether it loops or ends frozen. The Video Toaster Switcher for AROS
+(0.7 and later) adds such a file to a project with Tools, "Add
+croutons...", and puts it on air: a key page keyed over Program, a
+scroll or crawl moving over it by the clock, a framestore page as a
+still in its Framestore. A scroll or crawl is saved as the whole strip
+of its lines, so a long one makes a large file.
+
+
+ARexx
+-----
+The CG's port is CG_AREXX, with the functions of the Toaster CG
+(GET_ SET_ PICK MAKE KILL LOAD SAVE REQ_ REND REXX MACR ...), answering
+as the original did, so the Toaster's own scripts work unchanged. From
+a script:
+
+    call addlib('CG_AREXX', 0)
+    call SET_PAGE(4)
+    say GET_PAGE(TYPE)
+
+From the shell, without an interpreter:
+
+    cgrx SET_PAGE 4
+    cgrx GET_PAGE TYPE
+
+The Toaster's cg-config assigns its scripts to Alt-F1..F10 and
+Shift-Alt-F1..F10 (see Running).
+
+
+What differs from the Toaster CG
+--------------------------------
+- The interface is the Toaster's own art and lettering, read from your
+  Toaster's CG and redrawn as clean outlines, so it stays sharp at any
+  scale; text on the page is set by
+  FreeType with full antialiasing (the Toaster's renderer used four
+  levels). ToasterFonts (colour fonts) are decoded from the NTSC samples
+  they hold.
+- Requesters are reqtools'.
+- Take shows the page in the window, and buffer pages show the picture
+  loaded with Load RGB: the CG does not yet put a page on a running
+  Switcher's Program itself. A page gets there as a file (see Pages for
+  the Switcher).
+
+
+Known issues in this release candidate
+--------------------------------------
+- Load Draw makes PostScript graphics (text in the current PostScript
+  font, rotated and sheared); Encapsulated PostScript files cannot be
+  loaded (the Toaster ran them through its PostScript interpreter). The
+  port keeps a graphic's rotation and shear inside its text's buffer; the
+  Toaster CG reads such a book but shows the graphic upright.
+- F8 (Render line) shows the whole page, as F9 does.
+- Return and the down arrow differ: Return goes to the next line or
+  makes one, Down only moves. In the Toaster both were one function,
+  whose source is not in NewTek's release.
+- The Japanese and Korean front end (Ctrl, FEP_ functions) is not there.
+- ARexx: macros run without the CG waiting for them; SET_CHAR takes one
+  byte; GET_BACK gives no address.
+- F7's file format and Font Clear's rule (a font or brush still used on
+  a page is not removed) are inferred: their code is not in the release,
+  only their names and messages.
+
+
+Where it comes from, and the licence
+------------------------------------
+The CG's logic was converted from the Video Toaster CG source NewTek
+released as the Open Video Toaster. What is NewTek's in it stays
+NewTek's, on the terms of that release; nothing of a Video Toaster
+installation is in this archive - the panel's art and font are read from
+yours.
+
+The AROS port, its renderer, the outline tracer and the tools are by
+terminills, copyright (C) 2026, under the AROS Public License 1.1 (the
+file LICENSE, or http://www.aros.org/license.html). The SVG renderer is
+nanosvg by Mikko Mononen (zlib licence, see nanosvg-LICENSE.txt).
+
+This is a release candidate, without warranty of any kind.
