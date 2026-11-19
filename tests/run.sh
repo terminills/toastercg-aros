@@ -90,6 +90,10 @@ build/host/scalecmp build/test/drag-right.png build/test/drag-right2.png 100 0 0
 for p in 100 275; do
     build/host/playcheck testdata testdata/CG/Books/System4.1.Book 18 $p > build/test/playcheck-$p.log
 done
+# a still page's Take is the whole page, its lines too
+for page in 3 5; do
+    build/host/playcheck testdata testdata/CG/Books/System4.1.Book $page 100 >> build/test/playcheck-100.log
+done
 # Save Page: a key, a frame, a crawl and a scroll as the Switcher gets them
 build/host/cgscript testdata tests/savepage.cgs testdata/CG/Books/System4.1.Book > build/test/savepage.log
 ! grep -q FAIL build/test/savepage.log

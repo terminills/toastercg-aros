@@ -8,8 +8,8 @@
 
 #define CG_VERSION   1
 #define CG_REVISION  0
-#define CG_STAGE     "RC7"
-#define CG_DATE      "18.11.2026"
-#define CG_VERSTRING "1.0 RC7"
+#define CG_STAGE     "RC8"
+#define CG_DATE      "19.11.2026"
+#define CG_VERSTRING "1.0 RC8"
 
 #endif

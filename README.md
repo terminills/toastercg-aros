@@ -29,8 +29,10 @@ Layout:
   `src/aros/cg.c` what is AROS only: the window, requesters, the `CG_AREXX` port.
 - `include/`, `tools/` (host tools, `tools/aros/cgrx.c` the shell's way to the port), `tests/`, `docs/`.
 
-Pages go to the [Video Toaster Switcher for AROS](https://github.com/terminills/toaster-switcher) as croutons: Save
-Page writes the file its "Add croutons..." takes.
+The CG works with the [Video Toaster Switcher for AROS](https://github.com/terminills/toaster-switcher) as it did on the
+Toaster: the Switcher loads and enters it (Programs, `LDCG`, `DPCG`), Esc and the Switcher gadget go back with the CG
+staying loaded, and Take puts the page on the Switcher's Program. Pages also go there as croutons: Save Page writes the
+file its "Add croutons..." takes.
 
 Licence: the code of this repository is under the AROS Public License 1.1 (`LICENSE`); the Initial Developer is terminills,
 copyright (C) 2026. The CG's logic was converted from NewTek's CG (the Open Video Toaster source); what is NewTek's in

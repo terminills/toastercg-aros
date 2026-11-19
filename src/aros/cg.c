@@ -1,6 +1,8 @@
 /*
     ToasterCG for AROS: the CG interface in a window scaled to the
     screen, reqtools requesters, the CG_AREXX port and Take.
+    With the Video Toaster Switcher for AROS running, Take goes on its
+    Program and the Switcher gadget goes to it, the CG staying loaded.
 
     CG [BOOK] [TOASTER dir] [SCALE percent] [CONFIG file]
 
@@ -46,6 +48,7 @@
 
 #include "cgart.h"
 #include "cgui.h"
+#include "cgpage.h"
 #include "cgplay.h"
 #include "version.h"
 
@@ -295,8 +298,149 @@ static void memory(void *ud, unsigned long *graphics, unsigned long *other)
     *other = AvailMem(MEMF_ANY) - *graphics;
 }
 
+/************************************************************ the Switcher */
+
+#define SW_PORT  "ToasterARexx.port"    /* Switcher(...) */
+#define ED_PORT  "PROJECT_REXX_PORT"    /* its Editor's functions: croutons */
+#define SW_ASK   (3 * TICKS_PER_SECOND)     /* an answer is waited for 3 seconds, */
+#define SW_DO    (10 * TICKS_PER_SECOND)    /* 10 once the Switcher has answered */
+
+static struct MsgPort *sw_reply;
+static int sw_late;                     /* calls not answered in that time, */
+static int sw_silent;                   /* the last one among them */
+
+static void sw_free(struct RexxMsg *rm)
+{
+    int i;
+
+    if (!rm->rm_Result1 && rm->rm_Result2)
+        DeleteArgstring((UBYTE *)rm->rm_Result2);
+    for (i = 0; i < 3; i++)
+        if (rm->rm_Args[i])
+            DeleteArgstring((UBYTE *)rm->rm_Args[i]);
+    DeleteRexxMsg(rm);
+}
+
+/* the clock's ticks: a count of Delay()s runs long beside a busy Switcher */
+static ULONG sw_ticks(void)
+{
+    struct DateStamp ds;
+
+    DateStamp(&ds);
+    return ((ULONG)ds.ds_Days * 1440 + ds.ds_Minute) * 60 * TICKS_PER_SECOND + ds.ds_Tick;
+}
+
+static int sw_there(void)
+{
+    int there;
+
+    Forbid();
+    there = FindPort((CONST_STRPTR)SW_PORT) != NULL;
+    Permit();
+    return there;
+}
+
+/* one function of the Switcher's, as a script calls it after addlib():
+   1 with its result when it answered 0 in time. A Switcher that is in
+   one of its own requesters answers late; that answer is freed when it
+   comes. */
+static int sw_call(int ticks, const char *port, const char *fn, const char *a1, const char *a2, char *result,
+                   size_t len)
+{
+    const char *arg[3];
+    struct RexxMsg *rm, *m = NULL;
+    struct MsgPort *to;
+    ULONG since;
+    int i, ok;
+
+    arg[0] = fn;
+    arg[1] = a1;
+    arg[2] = a2;
+    if (result && len)
+        result[0] = 0;
+    sw_silent = 0;
+    if (!sw_reply && !(sw_reply = CreateMsgPort()))
+        return 0;
+    if (!(rm = CreateRexxMsg(sw_reply, NULL, NULL)))
+        return 0;
+    rm->rm_Action = RXFUNC | RXFF_RESULT | (a2 ? 2 : a1 ? 1 : 0);
+    for (i = 0; i < 3 && arg[i]; i++)
+        if (!(rm->rm_Args[i] = (IPTR)CreateArgstring((UBYTE *)arg[i], strlen(arg[i]))))
+        {
+            sw_free(rm);
+            return 0;
+        }
+    Forbid();
+    if ((to = FindPort((CONST_STRPTR)port)))
+        PutMsg(to, &rm->rm_Node);
+    Permit();
+    if (!to)
+    {
+        sw_free(rm);
+        return 0;
+    }
+    since = sw_ticks();
+    for (;;)
+    {
+        while ((m = (struct RexxMsg *)GetMsg(sw_reply)) && m != rm)
+        {
+            sw_free(m);
+            sw_late--;
+        }
+        if (m || sw_ticks() - since >= (ULONG)ticks)
+            break;
+        Delay(1);
+    }
+    sw_silent = !m;
+    if (!m)
+    {
+        sw_late++;
+        return 0;
+    }
+    ok = rm->rm_Result1 == 0;
+    if (ok && result && len && rm->rm_Result2)
+        snprintf(result, len, "%s", (const char *)rm->rm_Result2);
+    sw_free(rm);
+    return ok;
+}
+
+static void sw_close(void)
+{
+    struct RexxMsg *m;
+    ULONG since = sw_ticks();
+
+    if (!sw_reply)
+        return;
+    for (;;)
+    {
+        while ((m = (struct RexxMsg *)GetMsg(sw_reply)))
+        {
+            sw_free(m);
+            sw_late--;
+        }
+        if (sw_late <= 0 || sw_ticks() - since >= SW_ASK)
+            break;
+        Delay(1);
+    }
+    /* a call still out comes back to this port: it stays */
+    if (sw_late <= 0)
+        DeleteMsgPort(sw_reply);
+    sw_reply = NULL;
+}
+
+/* the Switcher gadget and Esc with a Switcher running: one that is busy
+   comes to the front when it gets to it */
+static int to_switcher(void *ud)
+{
+    (void)ud;
+    if (!sw_there())
+        return 0;
+    sw_call(SW_ASK, SW_PORT, "Switcher", "TOSW", NULL, NULL, 0);
+    return 1;
+}
+
 static struct cg_host host = { NULL, request, file, string, number, status, macro, render, load_book,
-                               load_background, ask_load, memory };
+                               load_background, ask_load, memory, to_switcher };
 
 /************************************************************ Take */
 
@@ -390,6 +534,66 @@ static int take(void)
     return 1;
 }
 
+/* Take with a Switcher running: the page goes on its Program as well, as
+   a crouton of its project that is loaded for the Take and deleted after
+   it. A key page is keyed over Main, a scroll or crawl runs there, a
+   buffer page is taken from the Framestore; the key or click that ends
+   the Take takes it off. 0 when no Switcher takes the page. */
+static int take_program(void)
+{
+    static const char file[] = "T:ToasterCG.take", *const bus[] = { "001", "002", "003", "004", "DV1", "DV2", "BKG" };
+    int buffer = cg_edit_page(editor)->type == CG_PAGE_BUFFER, had;
+    char spot[CG_RESULT_MAX], prvw[CG_RESULT_MAX], frez[CG_RESULT_MAX], framed[CG_RESULT_MAX] = "", text[CG_RESULT_MAX];
+    const char *err;
+
+    if (!sw_there() || !cg_page_save(editor, file, &err))
+        return 0;
+    had = sw_call(SW_ASK, ED_PORT, "CROUTONSPOT", NULL, NULL, spot, sizeof(spot));
+    if (sw_silent || !sw_call(SW_DO, SW_PORT, "Switcher", "STAT", "PREV", prvw, sizeof(prvw)) ||
+        !sw_call(SW_DO, SW_PORT, "Switcher", "STAT", "FREZ", frez, sizeof(frez)) ||
+        !sw_call(SW_DO, ED_PORT, "CROUTONLOAD", file, NULL, text, sizeof(text)))
+    {
+        DeleteFile((CONST_STRPTR)file);
+        return 0;
+    }
+    if (sw_call(SW_DO, SW_PORT, "Switcher", "TAKE", NULL, NULL, 0))
+        sw_call(SW_DO, SW_PORT, "Switcher", "STAT", "MAIN", framed, sizeof(framed));
+    take();
+    /* off: only while the crouton is the one loaded here, and a buffer
+       page only while it is still Main */
+    if (sw_call(SW_DO, ED_PORT, "CROUTONPICK", "LAST", NULL, NULL, 0) &&
+        sw_call(SW_DO, ED_PORT, "CROUTONNAME", NULL, NULL, text, sizeof(text)) && !strcasecmp(text, file))
+    {
+        if (buffer && framed[0] && sw_call(SW_DO, SW_PORT, "Switcher", "STAT", "MAIN", text, sizeof(text)) &&
+            !strcmp(text, framed))
+        {
+            int slot = 0;
+            long bit = atol(prvw);
+
+            sw_call(SW_DO, SW_PORT, "Switcher", "TAKE", NULL, NULL, 0);
+            while (bit > 1 && slot < 6)
+            {
+                bit >>= 1;
+                slot++;
+            }
+            if (prvw[0] && bit == 1)
+            {
+                snprintf(text, sizeof(text), "P%s", bus[slot]);
+                sw_call(SW_DO, SW_PORT, "Switcher", text, NULL, NULL, 0);
+            }
+            /* the Framestore was live before the page froze it */
+            if (!strcmp(frez, "0"))
+                sw_call(SW_DO, SW_PORT, "Switcher", "LVID", NULL, NULL, 0);
+        }
+        sw_call(SW_DO, ED_PORT, "CROUTONDELETE", NULL, NULL, NULL, 0);
+        if (had)
+            sw_call(SW_DO, ED_PORT, "CROUTONPICK", spot, NULL, NULL, 0);
+    }
+    DeleteFile((CONST_STRPTR)file);
+    cg_ui_status(ui, framed[0] ? "Taken on Program" : "Switcher: not taken");
+    return 1;
+}
+
 /* REND: the F9 Render, the page shown as it will be taken */
 static int render(void *ud)
 {
@@ -413,6 +617,17 @@ static void rexx_message(struct RexxMsg *rm)
         DeleteArgstring((UBYTE *)rm->rm_Args[0]);
         DeleteRexxMsg(rm);
         macros_out--;
+        return;
+    }
+    /* what the Toaster's Switcher sent its CG to enter it: to the front */
+    if (rm->rm_Args[0] && !strcasecmp((const char *)rm->rm_Args[0], "FGC_SELECT"))
+    {
+        ScreenToFront(win->WScreen);
+        WindowToFront(win);
+        ActivateWindow(win);
+        rm->rm_Result1 = RC_OK;
+        rm->rm_Result2 = 0;
+        ReplyMsg(&rm->rm_Node);
         return;
     }
     if ((rm->rm_Action & RXCODEMASK) == RXFUNC)
@@ -798,7 +1013,7 @@ static int cg_main(int argc, char **argv)
         }
         if (r & CG_UI_QUIT)
             quit = 1;
-        if (r & CG_UI_TAKE)
+        if ((r & CG_UI_TAKE) && !take_program())
             take();
         if (r & (CG_UI_REDRAW | CG_UI_TAKE))
             show();
@@ -821,6 +1036,7 @@ out:
             ReplyMsg(m);
         DeleteMsgPort(rexx_port);
     }
+    sw_close();
     if (own_assign)
         AssignLock((CONST_STRPTR)"ToasterCG", BNULL);
     if (win)

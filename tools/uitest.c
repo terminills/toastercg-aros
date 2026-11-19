@@ -113,7 +113,7 @@ static int write_png(const char *path, const uint8_t *rgba, int w, int h)
 
 int main(int argc, char **argv)
 {
-    struct cg_host host = { NULL, request, file, string, number, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+    struct cg_host host = { NULL, request, file, string, number, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
     char line[1024];
     struct cg_renderer *r;
     struct cg_editor *e;

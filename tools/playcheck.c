@@ -3,6 +3,8 @@
     scroll shows the page at view offset top + pos(k), over black, so
     every field must be what cg_render_page_view() draws there,
     flattened; rounding may differ by one.
+    A still page's field (a key or a framestore page) must be the page
+    as cg_render_page() draws it, flattened.
 
     usage: playcheck fontroot book page percent
 
@@ -50,9 +52,26 @@ int main(int argc, char **argv)
     f = malloc((size_t)w * h * 4);
     v = malloc((size_t)w * h * 4);
     g = malloc((size_t)w * h * 4);
-    if (b->pages[page].type != CG_PAGE_SCROLL || !p || !q || !f || !v || !g)
+    if (!p || !q || !f || !v || !g)
         return 20;
-    for (k = 0; k < 900; k++)
+    if (b->pages[page].type == CG_PAGE_STATIC || b->pages[page].type == CG_PAGE_BUFFER)
+    {
+        /* a still page: every field is the page itself over black */
+        int same;
+
+        cg_play_field(p, f, w, h);
+        cg_render_page(r, b, page, v, w, h, pc / 100.0);
+        cg_render_flatten(v, w, h);
+        same = !memcmp(f, v, (size_t)w * h * 4);
+        memset(g, 0, (size_t)w * h * 4);
+        cg_render_flatten(g, w, h);
+        printf("%d%% still page %d: its field is %s, and %s\n", pc, page, same ? "the page" : "NOT the page",
+               memcmp(f, g, (size_t)w * h * 4) ? "not empty" : "EMPTY");
+        worst = !same || !memcmp(f, g, (size_t)w * h * 4) ? 99 : 0;
+    }
+    else if (b->pages[page].type != CG_PAGE_SCROLL)
+        return 20;
+    for (k = 0; k < 900 && b->pages[page].type == CG_PAGE_SCROLL; k++)
     {
         long pos = floordiv(-(long)h * 200 + (long)k * speed * pc, 200);
         size_t i;

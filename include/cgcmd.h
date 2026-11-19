@@ -48,6 +48,8 @@ struct cg_host
     /* free memory for Help: graphics (chip) and other (fast), in bytes; on
        AROS pc-x86_64 the first 2 GB are chip memory, the rest fast */
     void (*memory)(void *ud, unsigned long *graphics, unsigned long *other);
+    /* the Switcher to the front, the CG staying as it is; 0 when none runs */
+    int (*switcher)(void *ud);
 };
 
 struct cg_cmd

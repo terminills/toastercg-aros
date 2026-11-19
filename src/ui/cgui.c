@@ -1049,6 +1049,15 @@ int cg_ui_may_quit(struct cg_ui *u)
     return !u->e->dirty || ask(u, "The book has changed.", "Leave the CG without saving it?", 1);
 }
 
+/* Switcher and Esc: to the Switcher when one runs, the CG staying loaded
+   as on the Toaster; on its own the CG is left */
+static int leave(struct cg_ui *u)
+{
+    if (u->host && u->host->switcher && u->host->switcher(u->host->ud))
+        return CG_UI_REDRAW;
+    return cg_ui_may_quit(u) ? CG_UI_QUIT : CG_UI_REDRAW;
+}
+
 static void tell_message(struct cg_ui *u)
 {
     if (u->e->message)
@@ -1776,9 +1785,7 @@ static int bar_action(struct cg_ui *u, struct gad *g, int x, int y)
         cycle_speed(u);
         break;
     case ID_SWITCHER:
-        if (!cg_ui_may_quit(u))
-            break;
-        return CG_UI_QUIT;
+        return leave(u);
     case ID_BAR_CONTINUE:
         go_normal(u);
         break;
@@ -2458,7 +2465,7 @@ static int key(struct cg_ui *u, int raw, int ascii, unsigned qual)
     {
     case CG_RAW_ESC:
         if (u->bar_mode == BAR_NORMAL)
-            return cg_ui_may_quit(u) ? CG_UI_QUIT : 0;
+            return leave(u);
         go_normal(u);
         return CG_UI_REDRAW;
     case CG_RAW_HELP:

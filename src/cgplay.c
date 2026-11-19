@@ -72,12 +72,13 @@ struct cg_play *cg_play_new(struct cg_renderer *r, const struct cg_book *book, i
         free(p);
         return NULL;
     }
-    /* the background alone: the page without its lines */
+    /* a moving page's background alone, without its lines; a still page whole */
     strip_book = malloc(sizeof(*strip_book));
     if (strip_book)
     {
         memcpy(strip_book, book, sizeof(*strip_book));
-        strip_book->pages[page].lines = NULL;
+        if (p->type == CG_PAGE_SCROLL || p->type == CG_PAGE_CRAWL)
+            strip_book->pages[page].lines = NULL;
         cg_render_page(r, strip_book, page, p->back, p->fw, p->fh, scale);
         free(strip_book);
     }

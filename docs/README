@@ -1,4 +1,4 @@
-ToasterCG for AROS  1.0 RC7 (release candidate 7)
+ToasterCG for AROS  1.0 RC8 (release candidate 8)
 =================================================
 
 The Video Toaster CG, NewTek's character generator, running natively on
@@ -48,7 +48,7 @@ Unpack the archive anywhere, with any LhA or with the lha of AROS's
 contrib (Extras/Misc/aminet/C), for example into Work:
 
     CD Work:
-    lha x ToasterCG-1.0RC7-x86_64.lha
+    lha x ToasterCG-1.0RC8-x86_64.lha
 
 Then point Toaster: at the Video Toaster's drawer, for example in
 S:User-Startup:
@@ -114,7 +114,9 @@ Help shows the keys. The function keys are the Toaster's: F1 shadow
 type, F2 light direction, F3 shadow length, F4 border, F5 shadow/border
 in front, F6 justify, F7 render the page to disk, F8 and F9 render, F10
 Take. Esc, the close gadget or Switcher leave the CG and ask first when
-the book has changed.
+the book has changed. With the Video Toaster Switcher for AROS running,
+Esc and Switcher go to it instead and the CG stays loaded, as on the
+Toaster; the close gadget leaves the CG.
 
 
 Take and F7 without Toaster hardware
@@ -124,6 +126,27 @@ NTSC field rate (59.94 fields a second, kept by the clock); a key or click
 stops it. F7 renders the page to a 24-bit IFF ILBM (the frame's size,
 see-through parts of a key page in its mask), which Load RGB takes back
 as a background.
+
+
+With the Video Toaster Switcher for AROS
+----------------------------------------
+With the Switcher (0.8 and later) running, Take also puts the page on
+its Program: a key page keyed over Main, a scroll or crawl moving over
+it, a framestore page as a still that is taken to Main. The page stays
+there while the CG shows it: until a key or click, or the end of a
+scroll or crawl. Then the Switcher is as it was: a framestore page is
+taken back off Main if it is still there, Preview is set again, and a
+Framestore that was live is live again.
+For the time of the Take the page is a crouton of the Switcher's
+project, written to T:ToasterCG.take; both are removed after it. When
+the Switcher does not answer within three seconds (it is playing a
+project, or one of its lists is open) the Take is the CG's own.
+
+The Switcher loads the CG from its Programs gadget, enters a CG that is
+loaded, and its ARexx commands LDCG and DPCG load and unload it; it
+looks for the drawer ToasterCG beside itself or in Toaster:, or takes
+the program named by its CG argument. The CG may as well be started on
+its own, before or after the Switcher.
 
 
 Pages for the Switcher
@@ -169,8 +192,8 @@ What differs from the Toaster CG
   they hold.
 - Requesters are reqtools'.
 - Take shows the page in the window, and buffer pages show the picture
-  loaded with Load RGB: the CG does not yet put a page on a running
-  Switcher's Program itself. A page gets there as a file (see Pages for
+  loaded with Load RGB. A page gets on air through the Video Toaster
+  Switcher for AROS: by Take while it runs, or as a file (see Pages for
   the Switcher).
 
 
